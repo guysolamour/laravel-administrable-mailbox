@@ -1,0 +1,49 @@
+<?php
+
+namespace {{namespace}}\Http\Controllers\{{frontNamespace}}\{{extensionsFolderClass}}\{{extensionClass}};
+
+use Illuminate\Http\Request;
+use {{namespace}}\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
+use Guysolamour\Administrable\Traits\FormBuilderTrait;
+
+class ContactController extends Controller
+{
+    use FormBuilderTrait;
+
+    public function create()
+    {
+        $form = $this->getForm(config('administrable-mailbox.models.mailbox'), config('administrable-mailbox.forms.front.mailbox'), false);
+
+        $page = get_meta_page('contact');
+
+        return view('{{frontLowerNamespace}}.{{extensionsFolder}}.{{extensionPluralSlug}}.create', compact('form', 'page'));
+    }
+
+    public function store(Request $request)
+    {
+        $form = $this->getForm( config('administrable-mailbox.models.mailbox'), config('administrable-mailbox.forms.front.mailbox'), false );
+        $form->redirectIfNotValid();
+
+        // save the message in database and send the mail
+        ${{extensionSingularSlug}} = config('administrable-mailbox.models.mailbox')::create( $request->all() );
+
+        if($request->get('send_copy')){
+            $sendme_mail = config('administrable-mailbox.mails.front.sendme_mail');
+            Mail::to(${{extensionSingularSlug}}->email)->send(new $sendme_mail(${{extensionSingularSlug}}));
+        }
+
+        // Notify admins
+        $contact_notification = config('administrable-mailbox.notifications.back.mailbox');
+        Notification::send(get_guard_notifiers(), new $contact_notification(${{extensionSingularSlug}}));
+
+        if ($request->ajax()) {
+            return response()->json(['sucess' => Lang::get('administrable-mailbox::translations.controller.create')]);
+        }
+
+        flashy( Lang::get('administrable-mailbox::translations.controller.create') );
+
+        return back();
+    }
+}
