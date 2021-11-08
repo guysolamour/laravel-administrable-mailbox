@@ -1,6 +1,6 @@
 {
   "name": "guysolamour/laravel-administrable-mailbox",
-  "description": "Mailbox extensions for administrable package. This package can not be used alone.",
+  "description": "Mailbox extension for administrable package. This package can not be used alone.",
   "license": "MIT",
   "keywords": [
     "crud",
